@@ -1,0 +1,179 @@
+/* ===== 共通リセット ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ===== CSS変数（全ページ共通） ===== */
+:root {
+  --bg: linear-gradient(160deg, #fdf8f3 0%, #f0e8dc 100%);
+  --white: #ffffff;
+  --brown-dark: #2d1f14;
+  --brown-mid: #7a6a5a;
+  --brown-light: #c4a882;
+  --brown-pale: #f5f0ea;
+  --shadow: 0 12px 48px rgba(0,0,0,0.10);
+  --shadow-sm: 0 4px 18px rgba(45,31,20,0.12);
+  --radius: 28px;
+  --radius-sm: 14px;
+  --font: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+
+  /* カテゴリカラー */
+  --wagyu-bg: #fdf4e7;   --wagyu-accent: #c4733a;
+  --western-bg: #edf7ed; --western-accent: #3a7a3a;
+  --chinese-bg: #fdeaea; --chinese-accent: #b03030;
+  --asian-bg: #eaeff8;   --asian-accent: #3050a0;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  min-height: 100vh;
+  color: var(--brown-dark);
+}
+
+/* ===== 共通レイアウト ===== */
+.page-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 16px 64px;
+}
+
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  width: min(380px, 96vw);
+}
+
+/* ===== 共通ヘッダー（サイトナビ） ===== */
+.site-nav {
+  width: 100%;
+  background: var(--white);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.site-nav__logo {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--brown-dark);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.site-nav__links {
+  display: flex;
+  gap: 6px;
+}
+.site-nav__link {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brown-mid);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+.site-nav__link:hover,
+.site-nav__link.active {
+  background: var(--brown-pale);
+  color: var(--brown-dark);
+}
+
+/* ===== ページタイトルブロック ===== */
+.page-title {
+  text-align: center;
+  margin-bottom: 28px;
+  animation: slideUp 0.5s ease;
+}
+.page-title__sub {
+  font-size: 11px;
+  letter-spacing: 5px;
+  color: var(--brown-light);
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.page-title__main {
+  font-size: clamp(24px, 7vw, 38px);
+  font-weight: 800;
+  color: var(--brown-dark);
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+}
+.page-title__desc {
+  font-size: 12px;
+  color: #b8a08a;
+}
+
+/* ===== ボタン ===== */
+.btn {
+  width: 100%;
+  padding: 15px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: all 0.2s;
+}
+.btn--primary {
+  background: var(--brown-dark);
+  color: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+.btn--primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(45,31,20,0.25);
+}
+.btn--primary:disabled {
+  background: #c9bcb0;
+  cursor: not-allowed;
+}
+.btn--line {
+  background: #06C755;
+  color: var(--white);
+  box-shadow: 0 4px 14px rgba(6,199,85,0.25);
+}
+.btn--line:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+/* ===== カテゴリバッジ ===== */
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 14px;
+  border-radius: 20px;
+  letter-spacing: 1.5px;
+  color: var(--white);
+}
+
+/* ===== アニメーション ===== */
+@keyframes popIn {
+  0%   { transform: scale(0.75); opacity: 0; }
+  70%  { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes slideUp {
+  0%   { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes fadeIn {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* ===== フッター ===== */
+.footer {
+  margin-top: 36px;
+  font-size: 11px;
+  color: #d4c0ad;
+  letter-spacing: 1px;
+  text-align: center;
+}

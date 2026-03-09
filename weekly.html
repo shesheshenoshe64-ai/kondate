@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>週間献立 | 献立アプリ</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .week-grid { width: min(440px, 96vw); display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+
+    .day-card {
+      background: #fff; border-radius: 18px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+      overflow: hidden; transition: box-shadow 0.2s;
+    }
+    .day-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.11); }
+
+    .day-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 1px solid #f0ebe4;
+    }
+    .day-label { font-size: 14px; font-weight: 800; color: #2d1f14; display: flex; align-items: center; gap: 8px; }
+    .day-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .day-actions { display: flex; gap: 8px; }
+    .day-action-btn {
+      padding: 5px 12px; border-radius: 20px; border: none;
+      font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s;
+    }
+    .day-action-btn--rand { background: #f5ede0; color: #c4733a; }
+    .day-action-btn--rand:hover { background: #e8d8c4; }
+    .day-action-btn--clear { background: #f5f0ea; color: #b8a08a; }
+    .day-action-btn--clear:hover { background: #e8e0d8; }
+
+    .day-meal { padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
+    .day-meal__emoji { font-size: 28px; }
+    .day-meal__info { flex: 1; }
+    .day-meal__name { font-size: 14px; font-weight: 800; color: #2d1f14; }
+    .day-meal__cat { font-size: 11px; font-weight: 600; }
+    .day-meal__detail-btn {
+      padding: 5px 12px; border-radius: 20px; border: none;
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      background: #f5f0ea; color: #8b7d72; transition: all 0.15s;
+    }
+    .day-meal__detail-btn:hover { background: #e8e0d8; }
+
+    .day-empty { padding: 16px; text-align: center; color: #c4a882; font-size: 13px; font-style: italic; }
+
+    /* Recipe drawer */
+    .recipe-drawer {
+      border-top: 1px solid #f0ebe4;
+      padding: 14px 16px;
+      animation: slideUp 0.3s ease;
+    }
+    .recipe-drawer__srv { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .recipe-drawer__srv-label { font-size: 12px; font-weight: 700; color: #8b7d72; }
+    .mini-srv-btn {
+      width: 26px; height: 26px; border-radius: 6px; border: 2px solid #e0d8d0;
+      background: #fff; color: #7a6a5a; font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .mini-srv-btn.active { border-color: var(--day-accent, #c4733a); background: var(--day-accent, #c4733a); color: #fff; }
+    .recipe-drawer__ings { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 12px; }
+    .recipe-drawer__ing { font-size: 11px; color: #4a3428; padding: 6px 10px; background: #faf7f4; border-radius: 8px; display: flex; justify-content: space-between; }
+    .recipe-drawer__amount { font-weight: 700; }
+    .recipe-drawer__steps { display: flex; flex-direction: column; gap: 7px; }
+    .recipe-drawer__step { display: flex; gap: 8px; align-items: flex-start; }
+    .recipe-drawer__step-num {
+      min-width: 20px; height: 20px; border-radius: 50%;
+      font-size: 11px; font-weight: 800; color: #fff;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .recipe-drawer__step-text { font-size: 12px; color: #3a2a1a; line-height: 1.5; padding-top: 1px; }
+
+    /* Bottom actions */
+    .bottom-actions { width: min(440px, 96vw); display: flex; flex-direction: column; gap: 10px; }
+    .btn--all-random {
+      width: 100%; padding: 15px; border-radius: 14px; border: none;
+      background: #2d1f14; color: #fff; font-size: 15px; font-weight: 700;
+      cursor: pointer; letter-spacing: 2px; transition: all 0.2s;
+      box-shadow: 0 4px 18px rgba(45,31,20,0.15);
+    }
+    .btn--all-random:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(45,31,20,0.22); }
+
+    /* 🛒 買い物リスト（将来の連携用ベース） */
+    .shopping-section {
+      width: min(440px, 96vw);
+      background: #fff; border-radius: 20px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+      overflow: hidden; margin-top: 8px;
+    }
+    .shopping-header {
+      padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: #edf7ed; border-bottom: 2px solid #90cc90;
+    }
+    .shopping-header__title { font-size: 14px; font-weight: 800; color: #3a7a3a; }
+    .shopping-header__badge { font-size: 11px; color: #3a7a3a; background: #c8e8c8; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
+    .shopping-list { padding: 14px 20px; display: flex; flex-direction: column; gap: 6px; }
+    .shopping-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #faf7f4; border-radius: 10px; }
+    .shopping-item__name { font-size: 13px; color: #3a2a1a; font-weight: 600; flex: 1; }
+    .shopping-item__amount { font-size: 12px; color: #3a7a3a; font-weight: 700; }
+    .shopping-empty { padding: 20px; text-align: center; color: #c4a882; font-size: 13px; }
+    .shopping-note { padding: 0 20px 16px; font-size: 11px; color: #b8a08a; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <nav class="site-nav">
+    <a class="site-nav__logo" href="index.html">🍽️ 献立アプリ</a>
+    <div class="site-nav__links">
+      <a class="site-nav__link" href="index.html">ホーム</a>
+      <a class="site-nav__link" href="kondate-app.html">ランダム</a>
+      <a class="site-nav__link" href="weekly.html">週間献立</a>
+    </div>
+  </nav>
+
+  <div class="page-wrap">
+    <div class="page-title">
+      <div class="page-title__sub">✦ WEEKLY PLAN ✦</div>
+      <h1 class="page-title__main">週間献立</h1>
+      <div class="page-title__desc">曜日ごとに夕食を計画しよう</div>
+    </div>
+
+    <div class="week-grid" id="week-grid"></div>
+
+    <div class="bottom-actions">
+      <button class="btn--all-random" onclick="randomAll()">🎲 全曜日をまとめてランダム決定</button>
+      <button class="btn btn--line" onclick="shareWeeklyToLine()">📤 今週の献立をLINEでシェア</button>
+    </div>
+
+    <!-- 買い物リスト（将来の自動連携ベース） -->
+    <div class="shopping-section" style="margin-top:24px">
+      <div class="shopping-header">
+        <div class="shopping-header__title">🛒 今週の買い物リスト</div>
+        <div class="shopping-header__badge" id="shopping-badge">0品目</div>
+      </div>
+      <div class="shopping-list" id="shopping-list">
+        <div class="shopping-empty">献立を決めると材料が自動でまとまります</div>
+      </div>
+      <div class="shopping-note" id="shopping-note"></div>
+    </div>
+
+    <div class="footer">献立を決めると材料が自動で集計されます</div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    Utils.setNavActive();
+
+    const DAYS = ['月','火','水','木','金','土','日'];
+    const DAY_COLORS = ['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6','#1abc9c'];
+
+    // 週間データ: { meal | null, servings, openRecipe }
+    let weekPlan = DAYS.map(() => ({ meal: null, servings: 2, openRecipe: false }));
+
+    // ---- レンダリング ----
+    function renderWeek() {
+      const grid = document.getElementById('week-grid');
+      grid.innerHTML = '';
+      weekPlan.forEach((day, i) => {
+        const c = day.meal ? Utils.catColors[day.meal.category] : null;
+        const card = document.createElement('div');
+        card.className = 'day-card';
+        card.id = `day-card-${i}`;
+
+        card.innerHTML = `
+          <div class="day-header">
+            <div class="day-label">
+              <div class="day-dot" style="background:${DAY_COLORS[i]}"></div>
+              ${DAYS[i]}曜日
+            </div>
+            <div class="day-actions">
+              <button class="day-action-btn day-action-btn--rand" onclick="randomDay(${i})">🎲 決める</button>
+              ${day.meal ? `<button class="day-action-btn day-action-btn--clear" onclick="clearDay(${i})">✕</button>` : ''}
+            </div>
+          </div>
+          ${day.meal ? `
+            <div class="day-meal">
+              <div class="day-meal__emoji">${day.meal.emoji}</div>
+              <div class="day-meal__info">
+                <div class="day-meal__name">${day.meal.name}</div>
+                <div class="day-meal__cat" style="color:${c.accent}">${day.meal.category}・${day.meal.desc}</div>
+              </div>
+              <button class="day-meal__detail-btn" onclick="toggleDayRecipe(${i})">
+                ${day.openRecipe ? '▲' : '📋'}
+              </button>
+            </div>
+            ${day.openRecipe ? renderRecipeDrawer(day, i) : ''}
+          ` : `
+            <div class="day-empty">まだ決まっていません</div>
+          `}
+        `;
+        grid.appendChild(card);
+      });
+      renderShoppingList();
+    }
+
+    function renderRecipeDrawer(day, i) {
+      const m = day.meal;
+      const c = Utils.catColors[m.category];
+      const ratio = day.servings / m.servings;
+      const srvBtns = [1,2,3,4,5,6].map(n => `
+        <button class="mini-srv-btn ${n===day.servings?'active':''}"
+          style="${n===day.servings ? `border-color:${c.accent};background:${c.accent};` : ''}"
+          onclick="setServings(${i},${n})">${n}</button>
+      `).join('');
+      const ings = m.ingredients.map(ing => `
+        <div class="recipe-drawer__ing">
+          <span>${ing.name}</span>
+          <span class="recipe-drawer__amount" style="color:${c.accent}">
+            ${ing.unit==='適量'?'適量':Utils.formatAmount(ing.amount,ratio)+ing.unit}
+          </span>
+        </div>
+      `).join('');
+      const steps = m.steps.map((s,j) => `
+        <div class="recipe-drawer__step">
+          <div class="recipe-drawer__step-num" style="background:${c.accent}">${j+1}</div>
+          <div class="recipe-drawer__step-text">${s}</div>
+        </div>
+      `).join('');
+      return `
+        <div class="recipe-drawer" style="background:${c.bg}">
+          <div class="recipe-drawer__srv">
+            <div class="recipe-drawer__srv-label">👥 人前：</div>
+            ${srvBtns}
+          </div>
+          <div style="font-size:12px;font-weight:800;color:#2d1f14;margin-bottom:8px">🛒 材料（${day.servings}人前）</div>
+          <div class="recipe-drawer__ings">${ings}</div>
+          <div style="font-size:12px;font-weight:800;color:#2d1f14;margin-bottom:8px">👨‍🍳 作り方</div>
+          <div class="recipe-drawer__steps">${steps}</div>
+        </div>
+      `;
+    }
+
+    // ---- 買い物リスト（材料を全曜日分まとめて集計） ----
+    function renderShoppingList() {
+      const mealsWithPlan = weekPlan.filter(d => d.meal);
+      const listEl = document.getElementById('shopping-list');
+      const badgeEl = document.getElementById('shopping-badge');
+      const noteEl = document.getElementById('shopping-note');
+
+      if (mealsWithPlan.length === 0) {
+        listEl.innerHTML = '<div class="shopping-empty">献立を決めると材料が自動でまとまります</div>';
+        badgeEl.textContent = '0品目';
+        noteEl.textContent = '';
+        return;
+      }
+
+      // 材料を集計（同じ名前・単位のものは合算）
+      const map = {};
+      mealsWithPlan.forEach(day => {
+        const ratio = day.servings / day.meal.servings;
+        day.meal.ingredients.forEach(ing => {
+          if (ing.unit === '適量') return; // 適量は除外
+          const key = `${ing.name}__${ing.unit}`;
+          if (!map[key]) map[key] = { name: ing.name, unit: ing.unit, amount: 0 };
+          map[key].amount += ing.amount * ratio;
+        });
+      });
+
+      const items = Object.values(map).sort((a,b) => a.name.localeCompare(b.name));
+      badgeEl.textContent = `${items.length}品目`;
+      listEl.innerHTML = items.map(it => `
+        <div class="shopping-item">
+          <span class="shopping-item__name">${it.name}</span>
+          <span class="shopping-item__amount">${Utils.formatAmount(it.amount, 1)} ${it.unit}</span>
+        </div>
+      `).join('');
+
+      const dayNames = weekPlan.map((d,i) => d.meal ? DAYS[i]+'曜' : null).filter(Boolean);
+      noteEl.textContent = `${dayNames.join('・')}の${mealsWithPlan.length}食分の材料をまとめています。`;
+    }
+
+    // ---- アクション ----
+    function randomDay(i) {
+      weekPlan[i].meal = Utils.randomMeal();
+      weekPlan[i].openRecipe = false;
+      renderWeek();
+    }
+
+    function clearDay(i) {
+      weekPlan[i].meal = null;
+      weekPlan[i].openRecipe = false;
+      renderWeek();
+    }
+
+    function toggleDayRecipe(i) {
+      weekPlan[i].openRecipe = !weekPlan[i].openRecipe;
+      renderWeek();
+    }
+
+    function setServings(i, n) {
+      weekPlan[i].servings = n;
+      renderWeek();
+    }
+
+    function randomAll() {
+      weekPlan = weekPlan.map(d => ({ ...d, meal: Utils.randomMeal(), openRecipe: false }));
+      renderWeek();
+    }
+
+    function shareWeeklyToLine() {
+      const lines = weekPlan.map((d, i) =>
+        d.meal ? `${DAYS[i]}曜: ${d.meal.emoji} ${d.meal.name}` : `${DAYS[i]}曜: 未定`
+      );
+      const text = `今週の夕食献立 🍽️\n${lines.join('\n')}\n\n献立アプリで作りました！`;
+      const url = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/index.html');
+      window.open(
+        `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
+        '_blank'
+      );
+    }
+
+    // 初期描画
+    renderWeek();
+  </script>
+</body>
+</html>
